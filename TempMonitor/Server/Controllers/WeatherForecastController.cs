@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.IO;
 
 namespace TempMonitor.Server.Controllers
 {
@@ -36,5 +37,13 @@ namespace TempMonitor.Server.Controllers
             })
             .ToArray();
         }
+
+        [HttpGet("GetFiles")]
+        public IActionResult GetFiles()
+        {
+            var files = Directory.GetFiles("/var/temps");
+            return this.Ok(string.Join(",", files));
+        }
     }
+
 }
