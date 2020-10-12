@@ -2,10 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.IO;
+using CsvHelper;
+using CsvHelper.Configuration;
+using System.Globalization;
 
 namespace TempMonitor.Server.Controllers
 {
@@ -39,11 +41,46 @@ namespace TempMonitor.Server.Controllers
         }
 
         [HttpGet("GetFiles")]
-        public IActionResult GetFiles()
+        public IActionResult GetFiles([FromQuery]int period)
         {
-            var files = Directory.GetFiles("/var/temps");
-            return this.Ok(string.Join(",", files));
+            logger.LogInformation("Period: {0}", period);
+            var files = GetFilePaths(period);
+            var temperatures = new List<Temperature>();
+            foreach(var file in files)
+            {
+                logger.LogInformation("Extracting data from {0}", file);
+                if (System.IO.File.Exists(file))
+                {
+                    using CsvReader reader = new CsvReader(new StreamReader(file), new CsvConfiguration(CultureInfo.CurrentCulture)
+                    {
+                        HasHeaderRecord = false
+                    }
+                    );
+                    temperatures.AddRange(reader.GetRecords<Temperature>());
+                }
+            }
+            
+            return this.Ok(temperatures);
         }
+
+        private IEnumerable<string> GetFilePaths(int period)
+        {
+            var basePath = "/var/temps";
+            var today = DateTime.Now;
+            var fp = new List<string>();
+            for( int i=period; i> 0; i--)
+            {
+                fp.Add( $"{basePath}/{today.AddDays(-1 * i):dd-MM-yy}_temps.csv");
+            }
+            return fp;
+
+        }
+
+        
     }
 
+    
+
 }
+
+
