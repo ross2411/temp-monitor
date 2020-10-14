@@ -1,90 +1,64 @@
 @page "/fetchdata"
 @using TempMonitor.Shared
-@using System.Globalization
 @inject HttpClient Http
 
 <h1>Weather forecast</h1>
 
 <p>This component demonstrates fetching data from the server.</p>
 
-@if (forecasts == null)
+@if (temperatures == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <h1>Garden Office Temperatures</h1>
+    <RadzenDropDown AllowClear="true" TValue="string"
+                    Data="@periods"
+                    TextProperty="Name" ValueProperty="Value" Style="margin-bottom: 20px" Change="@(args => Change(args, "DropDown"))" />
+    <label>Smooth <RadzenCheckBox @bind-Value="@smooth" Name="smooth"></RadzenCheckBox></label>
+    <RadzenChart>
+        <RadzenLineSeries Smooth="@smooth" Data="@temperatures" CategoryProperty="dateTime" Title="Inside Temp" ValueProperty="InsideTemp">
+        </RadzenLineSeries>
+        <RadzenLineSeries Smooth="@smooth" Data="@temperatures" CategoryProperty="Date" Title="Outside Temp" ValueProperty="OutsideTemp">
+        </RadzenLineSeries>
+        <RadzenCategoryAxis Padding="20" FormatString="{0:HH:MM}">
+            <RadzenAxisTitle Text="Time"></RadzenAxisTitle>
+        </RadzenCategoryAxis>
+        <RadzenValueAxis Formatter="@FormatAsDegreesC">
+            <RadzenGridLines Visible="true" />
+            <RadzenAxisTitle Text="Temperature" />
+        </RadzenValueAxis>
+    </RadzenChart>
 }
-<h1>Radzen Blazor Chart with line series</h1>
-<RadzenDropDown AllowClear="true" TValue="string"
-                Data="@periods"
-                TextProperty="Name" ValueProperty="Value" Style="margin-bottom: 20px" Change="@(args => Change(args, "DropDown"))" />
-        <label>Smooth <RadzenCheckBox @bind-Value="@smooth" Name="smooth"></RadzenCheckBox></label>
-        <RadzenChart>
-            <RadzenLineSeries Smooth="@smooth" Data="@temperatures" CategoryProperty="dateTime" Title="Inside Temp" ValueProperty="InsideTemp">
-            </RadzenLineSeries>
-            <RadzenLineSeries Smooth="@smooth" Data="@temperatures" CategoryProperty="Date" Title="Outside Temp" ValueProperty="OutsideTemp">
-                @*<RadzenMarkers MarkerType="MarkerType.Circle" />*@
-            </RadzenLineSeries>
-            <RadzenCategoryAxis Padding="20" FormatString="{0:HH:MM}">
-                <RadzenAxisTitle Text="Time"></RadzenAxisTitle>
-            </RadzenCategoryAxis>
-            <RadzenValueAxis Formatter="@FormatAsDegreesC">
-                <RadzenGridLines Visible="true" />
-                <RadzenAxisTitle Text="Temperature" />
-            </RadzenValueAxis>
-        </RadzenChart>
 
 
-    @code {
-        private WeatherForecast[] forecasts;
-        private Temperature[] temperatures;
-        private List<Period> periods = new List<Period>
-            {
+
+@code {
+    private Temperature[] temperatures;
+    private List<Period> periods = new List<Period>
+        {
                 new Period
                 {
                     Name = "1 day",
                     Value = 1
                 }
             };
-        private bool smooth = true;
+    private bool smooth = true;
 
-        protected override async Task OnInitializedAsync()
-        {
-            forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
-            temperatures = await Http.GetFromJsonAsync<Temperature[]>("weatherforecast/GetFiles?period=3");
-        }
-
-        string FormatAsDegreesC(object value)
-        {
-            return string.Format("{0}°C", value);
-        }
-        async Task Change(object value, string name)
-        {
-            temperatures = await Http.GetFromJsonAsync<Temperature[]>($"weatherforecast/GetFiles?period={value.ToString()}");
-            StateHasChanged();
-        }
-
-
-
+    protected override async Task OnInitializedAsync()
+    {
+        //TODO Swap out for SignalR
+        temperatures = await Http.GetFromJsonAsync<Temperature[]>("weatherforecast/GetFiles?period=3");
     }
+
+    string FormatAsDegreesC(object value)
+    {
+        return string.Format("{0}°C", value);
+    }
+    async Task Change(object value, string name)
+    {
+        temperatures = await Http.GetFromJsonAsync<Temperature[]>($"weatherforecast/GetFiles?period={value.ToString()}");
+        StateHasChanged();
+    }
+}

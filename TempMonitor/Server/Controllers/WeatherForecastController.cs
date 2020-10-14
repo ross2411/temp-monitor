@@ -98,10 +98,10 @@ namespace TempMonitor.Server.Controllers
             if (date == null)
                 date = DateTime.Now;
 
-            //var basePath = "/var/temps";
-            var basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
+            var basePath = "/var/temps";
+            //var basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
             var fp = new List<string>();
-            for( int i=period; i> 0; i--)
+            for( int i=period-1; i>= 0; i--)
             {
                 fp.Add( $"{basePath}/{date.Value.AddDays(-1 * i):dd-MM-yy}_temps.csv");
             }
