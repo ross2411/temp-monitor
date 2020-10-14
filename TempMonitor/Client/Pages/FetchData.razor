@@ -39,8 +39,6 @@ else
 <RadzenDropDown AllowClear="true" TValue="string"
                 Data="@periods"
                 TextProperty="Name" ValueProperty="Value" Style="margin-bottom: 20px" Change="@(args => Change(args, "DropDown"))" />
-<div class="row">
-    <div class="col-md-6 col-sm-12 p-4">
         <label>Smooth <RadzenCheckBox @bind-Value="@smooth" Name="smooth"></RadzenCheckBox></label>
         <RadzenChart>
             <RadzenLineSeries Smooth="@smooth" Data="@temperatures" CategoryProperty="dateTime" Title="Temperature" ValueProperty="InsideTemp">
@@ -57,8 +55,6 @@ else
                 <RadzenAxisTitle Text="Temperature" />
             </RadzenValueAxis>
         </RadzenChart>
-    </div>
-    </div>
 
 
     @code {
@@ -72,7 +68,7 @@ else
                     Value = 1
                 }
             };
-        private bool smooth;
+        private bool smooth = true;
 
         protected override async Task OnInitializedAsync()
         {
