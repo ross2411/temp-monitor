@@ -67,8 +67,7 @@ namespace TempMonitor.Server.Controllers
                     _logger.LogError("Unable to find file {0}", file);
                 }
             }
-            
-            return this.Ok(temperatures);
+            return Ok(temperatures);
         }
 
         private IEnumerable<Temperature> Granularity(IEnumerable<Temperature> temps, int granularity)
@@ -99,8 +98,8 @@ namespace TempMonitor.Server.Controllers
             if (date == null)
                 date = DateTime.Now;
 
-            var basePath = "/var/temps";
-            //var basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
+            //var basePath = "/var/temps";
+            var basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
             var fp = new List<string>();
             for( int i=period; i> 0; i--)
             {

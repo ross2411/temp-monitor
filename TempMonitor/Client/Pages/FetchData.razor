@@ -41,12 +41,11 @@ else
                 TextProperty="Name" ValueProperty="Value" Style="margin-bottom: 20px" Change="@(args => Change(args, "DropDown"))" />
         <label>Smooth <RadzenCheckBox @bind-Value="@smooth" Name="smooth"></RadzenCheckBox></label>
         <RadzenChart>
-            <RadzenLineSeries Smooth="@smooth" Data="@temperatures" CategoryProperty="dateTime" Title="Temperature" ValueProperty="InsideTemp">
-                @*<RadzenMarkers MarkerType="MarkerType.Square" />*@
+            <RadzenLineSeries Smooth="@smooth" Data="@temperatures" CategoryProperty="dateTime" Title="Inside Temp" ValueProperty="InsideTemp">
             </RadzenLineSeries>
-            @*<RadzenLineSeries Smooth="@smooth" Data="@revenue2020" CategoryProperty="Date" Title="2020" ValueProperty="Revenue">
-                <RadzenMarkers MarkerType="MarkerType.Circle" />
-            </RadzenLineSeries>*@
+            <RadzenLineSeries Smooth="@smooth" Data="@temperatures" CategoryProperty="Date" Title="Outside Temp" ValueProperty="OutsideTemp">
+                @*<RadzenMarkers MarkerType="MarkerType.Circle" />*@
+            </RadzenLineSeries>
             <RadzenCategoryAxis Padding="20" FormatString="{0:HH:MM}">
                 <RadzenAxisTitle Text="Time"></RadzenAxisTitle>
             </RadzenCategoryAxis>
