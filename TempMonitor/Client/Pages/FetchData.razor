@@ -10,37 +10,59 @@
 else
 {
 
-    <RadzenDropDown AllowClear="true" TValue="string"
-                    Data="@periods"
-                    TextProperty="Name"
-                    ValueProperty="Value"
-                    Style="margin-bottom: 20px"
-                    @bind-Value="@currentPeriod"
-                    Change="@(args => Change(args, "DropDown"))" />
-    <br />
-    
-    <label>Smooth <RadzenCheckBox @bind-Value="@smooth" Name="smooth"></RadzenCheckBox></label>
-    <RadzenChart>
-        <RadzenLineSeries Smooth="@smooth" Data="@temperatures" CategoryProperty="dateTime" Title="Inside Temp" ValueProperty="InsideTemp">
-        </RadzenLineSeries>
-        <RadzenLineSeries Smooth="@smooth" Data="@temperatures" CategoryProperty="Date" Title="Outside Temp" ValueProperty="OutsideTemp">
-        </RadzenLineSeries>
-        <RadzenCategoryAxis Padding="20" FormatString="{0:HH:MM}">
-            <RadzenAxisTitle Text="Time"></RadzenAxisTitle>
-        </RadzenCategoryAxis>
-        <RadzenValueAxis Formatter="@FormatAsDegreesC">
-            <RadzenGridLines Visible="true" />
-            <RadzenAxisTitle Text="Temperature" />
-        </RadzenValueAxis>
-    </RadzenChart>
-}
+    <div class="row">
+        <div class="col-md-6 col-sm-12 p-4">
+            <RadzenRadialGauge Style="width: 100%; height: 300px;">
+                <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Step="5" Min="0" Max="35" TickPosition=@tickPosition>
+                    <RadzenRadialGaugeScalePointer Value=@currentTemperature.InsideTemp Length="0.6" ShowValue=@showValue>
+                        <Template Context="pointer">
+                            <h4>
+                                @pointer.Value <sup>C</sup>
+                            </h4>
+                        </Template>
+                    </RadzenRadialGaugeScalePointer>
+                    <RadzenRadialGaugeScaleRange From="15" To="25" Fill="green" />
+                    <RadzenRadialGaugeScaleRange From="7.5" To="15" Fill="orange" />
+                    <RadzenRadialGaugeScaleRange From="0" To="7.5" Fill="blue" />
+                    <RadzenRadialGaugeScaleRange From="25" To="35" Fill="red" />
+                </RadzenRadialGaugeScale>
+            </RadzenRadialGauge>
+        </div>
+    </div>
+        <RadzenDropDown AllowClear="true" TValue="string"
+                        Data="@periods"
+                        TextProperty="Name"
+                        ValueProperty="Value"
+                        Style="margin-bottom: 20px"
+                        @bind-Value="@currentPeriod"
+                        Change="@(args => Change(args, "DropDown"))" />
+        <br />
+
+        <label>Smooth <RadzenCheckBox @bind-Value="@smooth" Name="smooth"></RadzenCheckBox></label>
+
+        <RadzenChart>
+            <RadzenLineSeries Smooth="@smooth" Data="@temperatures" CategoryProperty="dateTime" Title="Inside Temp" ValueProperty="InsideTemp">
+            </RadzenLineSeries>
+            <RadzenLineSeries Smooth="@smooth" Data="@temperatures" CategoryProperty="Date" Title="Outside Temp" ValueProperty="OutsideTemp">
+            </RadzenLineSeries>
+            <RadzenCategoryAxis Padding="20" FormatString="{0:HH:MM}">
+                <RadzenAxisTitle Text="Time"></RadzenAxisTitle>
+            </RadzenCategoryAxis>
+            <RadzenValueAxis Formatter="@FormatAsDegreesC">
+                <RadzenGridLines Visible="true" />
+                <RadzenAxisTitle Text="Temperature" />
+            </RadzenValueAxis>
+        </RadzenChart>
+        }
 
 
 
-@code {
-    private Temperature[] temperatures;
-    private string currentPeriod;
-    private List<Period> periods = new List<Period>
+        @code {
+            bool showValue = true;
+            GaugeTickPosition tickPosition = GaugeTickPosition.Inside;
+            private Temperature[] temperatures;
+            private string currentPeriod;
+            private List<Period> periods = new List<Period>
     {
                 new Period
                 {
@@ -69,26 +91,28 @@ else
                 }
             };
 
-    private bool smooth = true;
+            private bool smooth = true;
+            private Temperature currentTemperature;
 
-    protected override async Task OnInitializedAsync()
-    {
-        //TODO Swap out for SignalR
-        var periodDays = 3;
-        currentPeriod = periodDays.ToString(); // periods.First(m => m.Value == $"{periodDays}");
-        temperatures = (await Http.GetFromJsonAsync<Temperature[]>($"weatherforecast/GetFiles?period={periodDays}"));
-    }
+            protected override async Task OnInitializedAsync()
+            {
+                //TODO Swap out for SignalR
+                var periodDays = 3;
+                currentPeriod = periodDays.ToString(); // periods.First(m => m.Value == $"{periodDays}");
+                temperatures = (await Http.GetFromJsonAsync<Temperature[]>($"weatherforecast/GetFiles?period={periodDays}"));
+                currentTemperature = (await Http.GetFromJsonAsync<Temperature>($"weatherforecast/GetCurrentTemp"));
+            }
 
-    string FormatAsDegreesC(object value)
-    {
-        return string.Format("{0}°C", value);
-    }
-    async Task Change(object value, string name)
-    {
-        if (value == null)
-            value = 1;
-        currentPeriod = value.ToString();
-        temperatures = await Http.GetFromJsonAsync<Temperature[]>($"weatherforecast/GetFiles?period={value.ToString()}");
-        StateHasChanged();
-    }
-}
+            string FormatAsDegreesC(object value)
+            {
+                return string.Format("{0}°C", value);
+            }
+            async Task Change(object value, string name)
+            {
+                if (value == null)
+                    value = 1;
+                currentPeriod = value.ToString();
+                temperatures = await Http.GetFromJsonAsync<Temperature[]>($"weatherforecast/GetFiles?period={value.ToString()}");
+                StateHasChanged();
+            }
+        }
