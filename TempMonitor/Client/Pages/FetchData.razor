@@ -9,10 +9,16 @@
 }
 else
 {
-    
+
     <RadzenDropDown AllowClear="true" TValue="string"
                     Data="@periods"
-                    TextProperty="Name" ValueProperty="Value" Style="margin-bottom: 20px" Change="@(args => Change(args, "DropDown"))" />
+                    TextProperty="Name"
+                    ValueProperty="Value"
+                    Style="margin-bottom: 20px"
+                    @bind-Value="@currentPeriod"
+                    Change="@(args => Change(args, "DropDown"))" />
+    <br />
+    
     <label>Smooth <RadzenCheckBox @bind-Value="@smooth" Name="smooth"></RadzenCheckBox></label>
     <RadzenChart>
         <RadzenLineSeries Smooth="@smooth" Data="@temperatures" CategoryProperty="dateTime" Title="Inside Temp" ValueProperty="InsideTemp">
@@ -33,20 +39,44 @@ else
 
 @code {
     private Temperature[] temperatures;
+    private string currentPeriod;
     private List<Period> periods = new List<Period>
-        {
+    {
                 new Period
                 {
-                    Name = "1 day",
-                    Value = 1
+                    Name = "Today",
+                    Value = "1"
+                },
+                 new Period
+                {
+                    Name = "Last 2 days",
+                    Value = "2"
+                },
+                  new Period
+                {
+                    Name = "Last 3 days",
+                    Value = "3"
+                },
+                   new Period
+                {
+                    Name = "Last Week",
+                    Value = "7"
+                },
+                    new Period
+                {
+                    Name = "Last Month",
+                    Value = "30"
                 }
             };
+
     private bool smooth = true;
 
     protected override async Task OnInitializedAsync()
     {
         //TODO Swap out for SignalR
-        temperatures = await Http.GetFromJsonAsync<Temperature[]>("weatherforecast/GetFiles?period=3");
+        var periodDays = 3;
+        currentPeriod = periodDays.ToString(); // periods.First(m => m.Value == $"{periodDays}");
+        temperatures = (await Http.GetFromJsonAsync<Temperature[]>($"weatherforecast/GetFiles?period={periodDays}"));
     }
 
     string FormatAsDegreesC(object value)
@@ -55,6 +85,11 @@ else
     }
     async Task Change(object value, string name)
     {
+        @*if (!int.TryParse(value.ToString(), out currentPeriod))
+        {
+            Console.WriteLine($"Unable to parse value. {value}");
+        }*@
+        currentPeriod = value.ToString();
         temperatures = await Http.GetFromJsonAsync<Temperature[]>($"weatherforecast/GetFiles?period={value.ToString()}");
         StateHasChanged();
     }

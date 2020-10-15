@@ -26,17 +26,22 @@ namespace TempMonitor.Server.Controllers
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
         {
             this._logger = logger;
-            this._basePath = "/var/temps";
-            //this._basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
+            //this._basePath = "/var/temps";
+            this._basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
         }
 
 
         [HttpGet("GetFiles")]
-        public IActionResult GetFiles([FromQuery]int period, [FromQuery] DateTime? date)
+        public IActionResult GetFiles([FromQuery]int? period, [FromQuery] DateTime? date)
         {
             _logger.LogInformation("New entry in logs");
             _logger.LogInformation("Period: {0}. Date: {1}", period, date);
-            var files = GetFilePaths(period, date);
+            if (period == null)
+            {
+                _logger.LogInformation("No period was specified so defaulting to today");
+                period = 1;
+            }
+            var files = GetFilePaths(period.Value, date);
             var temperatures = new List<Temperature>();
             foreach(var file in files)
             {
@@ -46,11 +51,11 @@ namespace TempMonitor.Server.Controllers
                     using CsvReader reader = new CsvReader(new StreamReader(file), new CsvConfiguration(CultureInfo.GetCultureInfo("en-GB"))
                     {
                         HasHeaderRecord = false,
-                        
+                        MissingFieldFound = null,
                     }
                     );
                     var temps = reader.GetRecords<Temperature>();
-                    var lessGranular = Granularity(temps, period);
+                    var lessGranular = Granularity(temps, period.Value);
                     temperatures.AddRange(lessGranular);
                 }
                 else
@@ -58,6 +63,7 @@ namespace TempMonitor.Server.Controllers
                     _logger.LogError("Unable to find file {0}", file);
                 }
             }
+            temperatures = temperatures.Where(t => t.OutsideTemp.HasValue).ToList();
             return Ok(temperatures);
         }
 
