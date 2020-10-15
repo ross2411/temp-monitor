@@ -21,24 +21,15 @@ namespace TempMonitor.Server.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly string _basePath;
 
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
         {
             this._logger = logger;
+            this._basePath = "/var/temps";
+            //this._basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
         }
 
-        [HttpGet]
-        public IEnumerable<WeatherForecast> Get()
-        {
-            var rng = new Random();
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
-            })
-            .ToArray();
-        }
 
         [HttpGet("GetFiles")]
         public IActionResult GetFiles([FromQuery]int period, [FromQuery] DateTime? date)
@@ -59,7 +50,7 @@ namespace TempMonitor.Server.Controllers
                     }
                     );
                     var temps = reader.GetRecords<Temperature>();
-                    var lessGranular = Granularity(temps, 300);
+                    var lessGranular = Granularity(temps, period);
                     temperatures.AddRange(lessGranular);
                 }
                 else
@@ -70,8 +61,11 @@ namespace TempMonitor.Server.Controllers
             return Ok(temperatures);
         }
 
-        private IEnumerable<Temperature> Granularity(IEnumerable<Temperature> temps, int granularity)
+        private IEnumerable<Temperature> Granularity(IEnumerable<Temperature> temps, int period)
         {
+            //For 1 day I think 30 min granularity work which means add 30 mins to each period but multiply this by period to get the granularity
+            var granularity = 30 * period;
+
             List<Temperature> toReturn = new List<Temperature>();
             DateTime? lastPeriod = null;
             foreach (var t in temps)
@@ -83,7 +77,7 @@ namespace TempMonitor.Server.Controllers
                 }
                 else
                 {
-                    if (t.dateTime >= lastPeriod.Value.AddSeconds(granularity))
+                    if (t.dateTime >= lastPeriod.Value.AddMinutes(granularity))
                     {
                         toReturn.Add(t);
                         lastPeriod = t.dateTime;
@@ -98,12 +92,10 @@ namespace TempMonitor.Server.Controllers
             if (date == null)
                 date = DateTime.Now;
 
-            var basePath = "/var/temps";
-            //var basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
             var fp = new List<string>();
             for( int i=period-1; i>= 0; i--)
             {
-                fp.Add( $"{basePath}/{date.Value.AddDays(-1 * i):dd-MM-yy}_temps.csv");
+                fp.Add( $"{_basePath}/{date.Value.AddDays(-1 * i):dd-MM-yy}_temps.csv");
             }
             return fp;
 
