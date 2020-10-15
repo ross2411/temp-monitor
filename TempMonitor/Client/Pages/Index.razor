@@ -99,8 +99,8 @@ else
         //TODO Swap out for SignalR
         var periodDays = 3;
         currentPeriod = periodDays.ToString(); // periods.First(m => m.Value == $"{periodDays}");
-        temperatures = (await Http.GetFromJsonAsync<Temperature[]>($"weatherforecast/GetFiles?period={periodDays}"));
-        currentTemperature = (await Http.GetFromJsonAsync<Temperature>($"weatherforecast/GetCurrentTemp"));
+        temperatures = (await Http.GetFromJsonAsync<Temperature[]>($"temperature/GetTemps?period={periodDays}"));
+        currentTemperature = (await Http.GetFromJsonAsync<Temperature>($"temperature/GetCurrentTemp"));
     }
 
     string FormatAsDegreesC(object value)

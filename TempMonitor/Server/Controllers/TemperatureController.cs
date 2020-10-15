@@ -13,17 +13,17 @@ namespace TempMonitor.Server.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class TemperatureController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        private readonly ILogger<WeatherForecastController> _logger;
+        private readonly ILogger<TemperatureController> _logger;
         private readonly string _basePath;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public TemperatureController(ILogger<TemperatureController> logger)
         {
             this._logger = logger;
             this._basePath = "/var/temps";
@@ -39,7 +39,7 @@ namespace TempMonitor.Server.Controllers
             return this.Ok(temps.Last());
         }
 
-        [HttpGet("GetFiles")]
+        [HttpGet("GetTemps")]
         public IActionResult GetFiles([FromQuery]int? period, [FromQuery] DateTime? date)
         {
             _logger.LogInformation("New entry in logs");
