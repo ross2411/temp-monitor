@@ -85,10 +85,8 @@ else
     }
     async Task Change(object value, string name)
     {
-        @*if (!int.TryParse(value.ToString(), out currentPeriod))
-        {
-            Console.WriteLine($"Unable to parse value. {value}");
-        }*@
+        if (value == null)
+            value = 1;
         currentPeriod = value.ToString();
         temperatures = await Http.GetFromJsonAsync<Temperature[]>($"weatherforecast/GetFiles?period={value.ToString()}");
         StateHasChanged();
