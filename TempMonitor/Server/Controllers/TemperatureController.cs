@@ -26,8 +26,8 @@ namespace TempMonitor.Server.Controllers
         public TemperatureController(ILogger<TemperatureController> logger)
         {
             this._logger = logger;
-            this._basePath = "/var/temps";
-            //this._basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
+            //this._basePath = "/var/temps";
+            this._basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
         }
 
         [HttpGet("GetCurrentTemp")]
@@ -36,6 +36,8 @@ namespace TempMonitor.Server.Controllers
             var now = DateTime.Now;
             var filePath = GetFilePaths(1, now).First();
             var temps = ExtractTemperatures(filePath, 1);
+            if (!temps.Any())
+                return this.BadRequest("No temperature files exist for today");
             return this.Ok(temps.Last());
         }
 
@@ -54,15 +56,10 @@ namespace TempMonitor.Server.Controllers
             foreach(var file in files)
             {
                 _logger.LogInformation("Extracting data from {0}", file);
-                if (System.IO.File.Exists(file))
-                {
-                    var temps = ExtractTemperatures(file, period);
-                    temperatures.AddRange(temps);
-                }
-                else
-                {
-                    _logger.LogError("Unable to find file {0}", file);
-                }
+                
+                var temps = ExtractTemperatures(file, period);
+                temperatures.AddRange(temps);
+               
             }
             temperatures = temperatures.Where(t => t.OutsideTemp.HasValue).ToList();
             return Ok(temperatures);
@@ -70,6 +67,12 @@ namespace TempMonitor.Server.Controllers
 
         private IEnumerable<Temperature> ExtractTemperatures(string file, int? period)
         {
+            if (!System.IO.File.Exists(file))
+            {
+                _logger.LogError("Unable to find file {0}", file);
+                return new List<Temperature>();
+            }
+
             using CsvReader reader = new CsvReader(new StreamReader(file), new CsvConfiguration(CultureInfo.GetCultureInfo("en-GB"))
             {
                 HasHeaderRecord = false,

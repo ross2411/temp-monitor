@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using TempMonitor.Shared
 @inject HttpClient Http
+@inject NavigationManager NavigationManager
 
 <h1>Garden Office Temperatures</h1>
 @if (temperatures == null)
@@ -12,7 +13,9 @@ else
 
     <div class="row">
         <div class="col-md-6 col-sm-12 p-4">
-            <RadzenRadialGauge Style="width: 100%; height: 300px;">
+            <label>Latest reading at: @currentTemperature.dateTime.ToString("dd/MM/yy HH:mm:ss")</label>
+            <br />
+            <RadzenRadialGauge Style="width: 100%; height: 200px;">
                 <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Step="5" Min="0" Max="35" TickPosition=@tickPosition>
                     <RadzenRadialGaugeScalePointer Value=@currentTemperature.InsideTemp Length="0.6" ShowValue=@showValue>
                         <Template Context="pointer">
@@ -37,7 +40,7 @@ else
                     @bind-Value="@currentPeriod"
                     Change="@(args => Change(args, "DropDown"))" />
     <br />
-
+    <RadzenButton Click="(args)=> RefreshPage()" >Refresh</RadzenButton>
     <label>Smooth <RadzenCheckBox @bind-Value="@smooth" Name="smooth"></RadzenCheckBox></label>
 
     <RadzenChart>
@@ -115,4 +118,11 @@ else
         temperatures = await Http.GetFromJsonAsync<Temperature[]>($"temperature/GetTemps?period={value.ToString()}");
         StateHasChanged();
     }
+
+    public void RefreshPage()
+    {
+        NavigationManager.NavigateTo("refresh");
+    }
+
+
 }
