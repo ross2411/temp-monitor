@@ -30,6 +30,21 @@ else
                     <RadzenRadialGaugeScaleRange From="25" To="35" Fill="red" />
                 </RadzenRadialGaugeScale>
             </RadzenRadialGauge>
+            <RadzenRadialGauge Style="width: 100%; height: 200px;">
+                <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Step="5" Min="0" Max="35" TickPosition=@tickPosition>
+                    <RadzenRadialGaugeScalePointer Value=@(currentTemperature.OutsideTemp??0) Length="0.6" ShowValue=@showValue>
+                        <Template Context="pointer">
+                            <h4>
+                                @pointer.Value <sup>C</sup>
+                            </h4>
+                        </Template>
+                    </RadzenRadialGaugeScalePointer>
+                    <RadzenRadialGaugeScaleRange From="15" To="25" Fill="green" />
+                    <RadzenRadialGaugeScaleRange From="7.5" To="15" Fill="orange" />
+                    <RadzenRadialGaugeScaleRange From="0" To="7.5" Fill="blue" />
+                    <RadzenRadialGaugeScaleRange From="25" To="35" Fill="red" />
+                </RadzenRadialGaugeScale>
+            </RadzenRadialGauge>
         </div>
     </div>
     <RadzenDropDown AllowClear="true" TValue="string"

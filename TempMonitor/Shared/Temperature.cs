@@ -17,6 +17,6 @@ namespace TempMonitor.Shared
         [Index(3)]
         public double? OutsideTemp { get; set; }
         [Index(4)]
-        public string? WeatherDescription { get; set; }
+        public string WeatherDescription { get; set; }
     }
 }

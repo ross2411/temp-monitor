@@ -26,8 +26,8 @@ namespace TempMonitor.Server.Controllers
         public TemperatureController(ILogger<TemperatureController> logger)
         {
             this._logger = logger;
-            //this._basePath = "/var/temps";
-            this._basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
+            this._basePath = "/var/temps";
+            //this._basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
         }
 
         [HttpGet("GetCurrentTemp")]
@@ -35,9 +35,9 @@ namespace TempMonitor.Server.Controllers
         {
             var now = DateTime.Now;
             var filePath = GetFilePaths(1, now).First();
-            var temps = ExtractTemperatures(filePath, 1);
+            var temps = ExtractTemperatures(filePath);
             if (!temps.Any())
-                return this.BadRequest("No temperature files exist for today");
+                return this.BadRequest(new { ErrorMessage = "No Temperature files exist for the date selected"});
             return this.Ok(temps.Last());
         }
 
@@ -56,8 +56,9 @@ namespace TempMonitor.Server.Controllers
             foreach(var file in files)
             {
                 _logger.LogInformation("Extracting data from {0}", file);
-                
-                var temps = ExtractTemperatures(file, period);
+
+                var temps = ExtractTemperatures(file);
+                temps = Granularity(temps, period ?? 1);
                 temperatures.AddRange(temps);
                
             }
@@ -65,7 +66,7 @@ namespace TempMonitor.Server.Controllers
             return Ok(temperatures);
         }
 
-        private IEnumerable<Temperature> ExtractTemperatures(string file, int? period)
+        private IEnumerable<Temperature> ExtractTemperatures(string file)
         {
             if (!System.IO.File.Exists(file))
             {
@@ -79,8 +80,8 @@ namespace TempMonitor.Server.Controllers
                 MissingFieldFound = null,
             }
                    );
-            var temps = reader.GetRecords<Temperature>();
-            return Granularity(temps, period.Value);
+            var temps = reader.GetRecords<Temperature>().ToList();
+            return temps;
 
         }
 
