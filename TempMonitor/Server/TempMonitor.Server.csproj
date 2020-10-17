@@ -19,5 +19,6 @@
 
   <ItemGroup>
     <Folder Include="Data\" />
+    <Folder Include="Hubs\" />
   </ItemGroup>
 </Project>
