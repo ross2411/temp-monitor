@@ -4,18 +4,24 @@
 @inject NavigationManager NavigationManager
 
 <h1>Garden Office Temperatures</h1>
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p><em>@errorMessage</em></p>
+}
 @if (temperatures == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-
+<div class="row">
+    <label>Latest reading at: @currentTemperature.dateTime.ToString("dd/MM/yy HH:mm:ss")</label>
+</div>
     <div class="row">
-        <div class="col-md-6 col-sm-12 p-4">
-            <label>Latest reading at: @currentTemperature.dateTime.ToString("dd/MM/yy HH:mm:ss")</label>
-            <br />
-            <RadzenRadialGauge Style="width: 100%; height: 200px;">
+
+        <div class="col-md">
+
+            <RadzenRadialGauge Style="width: 100%; height: 300px;">
                 <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Step="5" Min="0" Max="35" TickPosition=@tickPosition>
                     <RadzenRadialGaugeScalePointer Value=@currentTemperature.InsideTemp Length="0.6" ShowValue=@showValue>
                         <Template Context="pointer">
@@ -30,7 +36,9 @@ else
                     <RadzenRadialGaugeScaleRange From="25" To="35" Fill="red" />
                 </RadzenRadialGaugeScale>
             </RadzenRadialGauge>
-            <RadzenRadialGauge Style="width: 100%; height: 200px;">
+        </div>
+        <div class="col-md">
+            <RadzenRadialGauge Style="width: 100%; height: 300px;">
                 <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Step="5" Min="0" Max="35" TickPosition=@tickPosition>
                     <RadzenRadialGaugeScalePointer Value=@(currentTemperature.OutsideTemp??0) Length="0.6" ShowValue=@showValue>
                         <Template Context="pointer">
@@ -55,7 +63,7 @@ else
                     @bind-Value="@currentPeriod"
                     Change="@(args => Change(args, "DropDown"))" />
     <br />
-    <RadzenButton Click="(args)=> RefreshPage()" >Refresh</RadzenButton>
+    <RadzenButton Click="(args)=> RefreshPage()">Refresh</RadzenButton>
     <label>Smooth <RadzenCheckBox @bind-Value="@smooth" Name="smooth"></RadzenCheckBox></label>
 
     <RadzenChart>
@@ -111,14 +119,54 @@ else
 
     private bool smooth = true;
     private Temperature currentTemperature;
+    private string errorMessage = null;
 
     protected override async Task OnInitializedAsync()
     {
         //TODO Swap out for SignalR
         var periodDays = 3;
         currentPeriod = periodDays.ToString(); // periods.First(m => m.Value == $"{periodDays}");
-        temperatures = (await Http.GetFromJsonAsync<Temperature[]>($"temperature/GetTemps?period={periodDays}"));
-        currentTemperature = (await Http.GetFromJsonAsync<Temperature>($"temperature/GetCurrentTemp"));
+        using var temperatureHttpResponse = await Http.GetAsync($"temperature/GetTemps?period={periodDays}");
+
+        if (!temperatureHttpResponse.IsSuccessStatusCode)
+        {
+            // set error message for display, log to console and return
+            errorMessage = temperatureHttpResponse.ReasonPhrase;
+            Console.WriteLine($"There was an error retrieving Temps! {errorMessage}");
+            temperatures = new Temperature[] { new Temperature {
+            dateTime = new DateTime(2020,01,01),
+            Humidity =1,
+            InsideTemp = 1,
+            OutsideTemp = 1,
+            WeatherDescription = "n/a"
+                    }
+            };
+        }
+        else
+        {
+            temperatures = (await temperatureHttpResponse.Content.ReadFromJsonAsync<Temperature[]>());
+        }
+
+        using var currentTemperatureHttpResponse = await Http.GetAsync("temperature/GetCurrentTemp");
+        if (!currentTemperatureHttpResponse.IsSuccessStatusCode)
+        {
+            // set error message for display, log to console and return
+            errorMessage = currentTemperatureHttpResponse.ReasonPhrase;
+            Console.WriteLine($"There was an error retrieving Current Temp! {errorMessage}");
+            currentTemperature = new Temperature
+            {
+                dateTime = new DateTime(2020, 01, 01),
+                Humidity = 1,
+                InsideTemp = 1,
+                OutsideTemp = 1,
+                WeatherDescription = "n/a"
+            };
+        }
+        else
+        {
+            currentTemperature = (await currentTemperatureHttpResponse.Content.ReadFromJsonAsync<Temperature>());
+        }
+        //currentTemperature = (await Http.GetFromJsonAsync<Temperature>($"temperature/GetCurrentTemp"));
     }
 
     string FormatAsDegreesC(object value)

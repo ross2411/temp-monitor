@@ -8,6 +8,10 @@ using System.IO;
 using CsvHelper;
 using CsvHelper.Configuration;
 using System.Globalization;
+using BlazorSignalRApp.Server.Hubs;
+using Microsoft.AspNetCore.SignalR;
+using TempMonitor.Server.Settings;
+using Microsoft.Extensions.Options;
 
 namespace TempMonitor.Server.Controllers
 {
@@ -19,20 +23,25 @@ namespace TempMonitor.Server.Controllers
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
-
+        private readonly IHubContext<ChatHub> _chatHubContext;
         private readonly ILogger<TemperatureController> _logger;
         private readonly string _basePath;
 
-        public TemperatureController(ILogger<TemperatureController> logger)
+        public TemperatureController(
+            IHubContext<ChatHub> hubContext,
+            IOptions<TemperatureSettings> temperatureSettings,
+            ILogger<TemperatureController> logger)
         {
+            this._chatHubContext = hubContext;
             this._logger = logger;
-            this._basePath = "/var/temps";
+            this._basePath = temperatureSettings.Value.BasePath;
             //this._basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
         }
 
         [HttpGet("GetCurrentTemp")]
-        public IActionResult GetCurrentTemperature()
+        public async System.Threading.Tasks.Task<IActionResult> GetCurrentTemperatureAsync()
         {
+            await _chatHubContext.Clients.All.SendAsync("ReceiveMessage", "TempController", "Get Current Temp was just called");
             var now = DateTime.Now;
             var filePath = GetFilePaths(1, now).First();
             var temps = ExtractTemperatures(filePath);
