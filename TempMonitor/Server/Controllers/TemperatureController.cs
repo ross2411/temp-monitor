@@ -10,6 +10,8 @@ using CsvHelper.Configuration;
 using System.Globalization;
 using BlazorSignalRApp.Server.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using TempMonitor.Server.Settings;
+using Microsoft.Extensions.Options;
 
 namespace TempMonitor.Server.Controllers
 {
@@ -27,11 +29,12 @@ namespace TempMonitor.Server.Controllers
 
         public TemperatureController(
             IHubContext<ChatHub> hubContext,
+            IOptions<TemperatureSettings> temperatureSettings,
             ILogger<TemperatureController> logger)
         {
             this._chatHubContext = hubContext;
             this._logger = logger;
-            this._basePath = "/var/temps";
+            this._basePath = temperatureSettings.Value.BasePath;
             //this._basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
         }
 

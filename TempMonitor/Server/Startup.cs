@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
 using BlazorSignalRApp.Server.Hubs;
+using TempMonitor.Server.Settings;
 
 namespace TempMonitor.Server
 {
@@ -23,6 +24,8 @@ namespace TempMonitor.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<TemperatureSettings>(Configuration.GetSection("TemperatureSettings"));
+
             services.AddSignalR();
             services.AddControllersWithViews();
             services.AddRazorPages();
