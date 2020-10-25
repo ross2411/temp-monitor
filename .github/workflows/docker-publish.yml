@@ -60,7 +60,7 @@ jobs:
 
 
       - name: Configure Versions
-        run:  
+        run:  |
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
 
