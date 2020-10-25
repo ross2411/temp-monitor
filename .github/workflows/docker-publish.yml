@@ -34,7 +34,8 @@ jobs:
             docker-compose --file docker-compose.test.yml run sut
           else
             echo 'No Tests to run'
-            #docker build . --file TempMonitor/Server/Dockerfile.arm32 
+            docker build . --file TempMonitor/Server/Dockerfile 
+            docker build . --file TempMonitor/Server/Dockerfile.arm32 
           fi
 
   # Push image to GitHub Packages.
