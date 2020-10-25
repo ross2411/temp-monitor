@@ -18,8 +18,8 @@ jobs:
       with:
         dotnet-version: 3.1.301
     - name: Install dependencies
-      run: dotnet restore
+      run: dotnet restore TempMonitor.sln 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Release --no-restore TempMonitor.sln 
     - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test --no-restore --verbosity normal TempMonitor.sln 
