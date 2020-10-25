@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
 using BlazorSignalRApp.Server.Hubs;
+using TempMonitor.Server.Repository;
+using TempMonitor.Server.Services;
 using TempMonitor.Server.Settings;
 
 namespace TempMonitor.Server
@@ -34,6 +36,9 @@ namespace TempMonitor.Server
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
+
+            services.AddTransient<ITemperatureRepository, TemperatureRepository>();
+            services.AddTransient<ITemperatureService, TemperatureService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

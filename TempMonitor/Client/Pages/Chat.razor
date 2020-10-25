@@ -1,5 +1,6 @@
 ﻿@page "/chat"
 @using Microsoft.AspNetCore.SignalR.Client
+@using TempMonitor.Shared
 @inject NavigationManager NavigationManager
 @implements IDisposable
 
@@ -40,7 +41,7 @@
         .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
         .Build();
 
-        hubConnection.On<int, string>("test", (key, value) => {
+        hubConnection.On<List<Temperature>>("LoadInitialTemps", (t) => {
 
         });
 
