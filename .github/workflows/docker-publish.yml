@@ -59,9 +59,8 @@ jobs:
       # TODO: Create a PAT with `read:packages` and `write:packages` scopes and save it as an Actions secret `CR_PAT`
         run: echo "${{ secrets.CR_PAT }}" | docker login -u ${{ github.actor }} --password-stdin
 
-
-      - name: Configure Versions
-        run:  |
+      - name: Push image to GitHub Container Registry
+        run: |
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
 
@@ -72,9 +71,6 @@ jobs:
           [ "$VERSION" == "master" ] && VERSION=latest
   
           echo VERSION=$VERSION
-          
-      - name: Push image to GitHub Container Registry
-        run: |
           IMAGE_ID=tredsoft/$IMAGE_NAME
 
           # Change all uppercase to lowercase
@@ -86,6 +82,16 @@ jobs:
           
       - name: Push ARM32 image to GitHub Container Registry
         run: |
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=latest
+  
+          echo VERSION=$VERSION
           IMAGE_ID_ARM32=tredsoft/$IMAGE_NAME_ARM32
 
           # Change all uppercase to lowercase
