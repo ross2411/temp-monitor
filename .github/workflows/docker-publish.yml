@@ -15,7 +15,8 @@ on:
 
 env:
   # TODO: Change variable to your image's name.
-  IMAGE_NAME: tempmonitor-arm32
+  IMAGE_NAME_ARM32: tempmonitor-arm32
+  IMAGE_NAME: tempmonitor
 
 jobs:
   # Run tests.
@@ -32,7 +33,7 @@ jobs:
             docker-compose --file docker-compose.test.yml build
             docker-compose --file docker-compose.test.yml run sut
           else
-            docker build . --file TempMonitor/Server/Dockerfile.arm32 
+            #docker build . --file TempMonitor/Server/Dockerfile.arm32 
           fi
 
   # Push image to GitHub Packages.
@@ -47,20 +48,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build image
-        run: docker build . --file TempMonitor/Server/Dockerfile.arm32 --tag $IMAGE_NAME
+      - name: Build image 
+        run: docker build . --file TempMonitor/Server/Dockerfile --tag $IMAGE_NAME
+        
+      - name: Build ARM32 image 
+        run: docker build . --file TempMonitor/Server/Dockerfile.arm32 --tag $IMAGE_NAME_ARM32
 
       - name: Log into GitHub Container Registry
       # TODO: Create a PAT with `read:packages` and `write:packages` scopes and save it as an Actions secret `CR_PAT`
         run: echo "${{ secrets.CR_PAT }}" | docker login -u ${{ github.actor }} --password-stdin
 
-      - name: Push image to GitHub Container Registry
-        run: |
-          IMAGE_ID=tredsoft/$IMAGE_NAME
 
-          # Change all uppercase to lowercase
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-
+      - name: Configure Versions
+        run:  
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
 
@@ -69,9 +69,29 @@ jobs:
 
           # Use Docker `latest` tag convention
           [ "$VERSION" == "master" ] && VERSION=latest
-
-          echo IMAGE_ID=$IMAGE_ID
+  
           echo VERSION=$VERSION
+          
+      - name: Push image to GitHub Container Registry
+        run: |
+          IMAGE_ID=tredsoft/$IMAGE_NAME
+
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          echo IMAGE_ID=$IMAGE_ID
 
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
+          
+      - name: Push ARM32 image to GitHub Container Registry
+        run: |
+          IMAGE_ID_ARM32=tredsoft/$IMAGE_NAME_ARM32
+
+          # Change all uppercase to lowercase
+          IMAGE_ID_ARM32=$(echo $IMAGE_ID_ARM32 | tr '[A-Z]' '[a-z]')
+
+          echo IMAGE_ID_ARM32=$IMAGE_ID_ARM32
+          echo VERSION=$VERSION
+
+          docker tag $IMAGE_NAME_ARM32 $IMAGE_ID_ARM32:$VERSION
+          docker push $IMAGE_ID_ARM32:$VERSION
