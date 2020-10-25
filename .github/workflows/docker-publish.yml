@@ -33,6 +33,7 @@ jobs:
             docker-compose --file docker-compose.test.yml build
             docker-compose --file docker-compose.test.yml run sut
           else
+            echo 'No Tests to run'
             #docker build . --file TempMonitor/Server/Dockerfile.arm32 
           fi
 
