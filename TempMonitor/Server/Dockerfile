@@ -13,7 +13,6 @@ COPY TempMonitor/Shared/TempMonitor.Shared.csproj TempMonitor/Shared/
 RUN dotnet restore "TempMonitor/Server/TempMonitor.Server.csproj"
 COPY . .
 WORKDIR "/src/TempMonitor/Server"
-RUN dotnet build "TempMonitor.Server.csproj" -c Release -o /app/build
 
 FROM build AS publish
 RUN dotnet publish "TempMonitor.Server.csproj" -c Release -o /app/publish
