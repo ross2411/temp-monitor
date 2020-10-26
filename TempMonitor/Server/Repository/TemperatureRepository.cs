@@ -70,7 +70,10 @@ namespace TempMonitor.Server.Repository
         public async Task SaveTemperature(Temperature temperature)
         {
             var filePath = GetFilePath(temperature.dateTime);
-            await using var csv = new CsvWriter(new StreamWriter(filePath), GetConfig());
+            await using FileStream fileStream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+            await using StreamWriter streamWriter = new StreamWriter(fileStream);
+            await using var csv = new CsvWriter(streamWriter, GetConfig());
+            // Append records to csv
             csv.WriteRecord(temperature);
         }
 
