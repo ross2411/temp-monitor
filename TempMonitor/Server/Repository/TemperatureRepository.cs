@@ -6,8 +6,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration;
+using CsvHelper.TypeConversion;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TempMonitor.Server.CsvMapper;
 using TempMonitor.Server.Settings;
 using TempMonitor.Shared;
 
@@ -65,9 +67,11 @@ namespace TempMonitor.Server.Repository
            
         }
 
-        public Task SaveTemperature(Temperature temperature)
+        public async Task SaveTemperature(Temperature temperature)
         {
-            throw new NotImplementedException();
+            var filePath = GetFilePath(temperature.dateTime);
+            await using var csv = new CsvWriter(new StreamWriter(filePath), GetConfig());
+            csv.WriteRecord(temperature);
         }
 
         private IEnumerable<string> GetFilePaths(int period, DateTime? date = null)
@@ -78,10 +82,14 @@ namespace TempMonitor.Server.Repository
             var fp = new List<string>();
             for (int i = period - 1; i >= 0; i--)
             {
-                fp.Add($"{_basePath}/{date.Value.AddDays(-1 * i):dd-MM-yy}_temps.csv");
+                fp.Add(GetFilePath(date.Value.AddDays(-1 * i)));
             }
             return fp;
+        }
 
+        private string GetFilePath(DateTime date)
+        {
+            return $"{_basePath}/{date:dd-MM-yy}_temps.csv";
         }
 
         private IAsyncEnumerable<Temperature> ExtractTemperatures(string file, out CsvReader reader)
@@ -91,12 +99,7 @@ namespace TempMonitor.Server.Repository
                 _logger.LogError("Unable to find file {0}", file);
             }
 
-            reader = new CsvReader(new StreamReader(file), new CsvConfiguration(CultureInfo.GetCultureInfo("en-GB"))
-            {
-                HasHeaderRecord = false,
-                MissingFieldFound = null,
-            }
-                   );
+            reader = new CsvReader(new StreamReader(file), GetConfig());
             var temps =  reader.GetRecordsAsync<Temperature>();
             return temps;
 
@@ -126,6 +129,17 @@ namespace TempMonitor.Server.Repository
                 }
             }
             return toReturn;
+        }
+
+        private CsvConfiguration GetConfig()
+        {
+            var config = new CsvConfiguration(CultureInfo.GetCultureInfo("en-GB"))
+            {
+                HasHeaderRecord = false,
+                MissingFieldFound = null,
+            };
+            config.RegisterClassMap<TemperatureCsvMapper>();
+            return config;
         }
 
        
