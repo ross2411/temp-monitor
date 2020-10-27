@@ -1,7 +1,5 @@
-using System.ComponentModel;
 using System.IO.Abstractions;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
@@ -9,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
 using BlazorSignalRApp.Server.Hubs;
+using Microsoft.AspNetCore.Authentication;
 using TempMonitor.Server.Repository;
 using TempMonitor.Server.Services;
 using TempMonitor.Server.Settings;
@@ -29,6 +28,7 @@ namespace TempMonitor.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<TemperatureSettings>(Configuration.GetSection("TemperatureSettings"));
+            services.Configure<BasicAuthenticationSettings>(Configuration.GetSection("BasicAuthenticationSettings"));
 
             services.AddSignalR();
             services.AddControllersWithViews();
@@ -39,7 +39,12 @@ namespace TempMonitor.Server
                     new[] { "application/octet-stream" });
             });
             services.AddSwaggerGen();
-
+            services.AddAuthentication("BasicAuthentication")
+                .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
+            // services.AddAuthorization(options =>
+            // {
+            //
+            // });
             ConfigureIoC(services);
             
         }
@@ -49,6 +54,7 @@ namespace TempMonitor.Server
             services.AddTransient<ITemperatureRepository, TemperatureRepository>();
             services.AddTransient<ITemperatureService, TemperatureService>();
             services.AddTransient<IFileSystem, FileSystem>();
+            services.AddTransient<IBasicAuthenticationService, BasicAuthenticationService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -77,7 +83,8 @@ namespace TempMonitor.Server
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
@@ -86,6 +93,8 @@ namespace TempMonitor.Server
                 endpoints.MapHub<TemperatureHub>("/temperaturehub");
                 endpoints.MapFallbackToFile("index.html");
             });
+
+           
         }
     }
 }

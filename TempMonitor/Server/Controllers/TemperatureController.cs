@@ -1,18 +1,11 @@
 ﻿using TempMonitor.Shared;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.IO;
-using CsvHelper;
-using CsvHelper.Configuration;
-using System.Globalization;
 using BlazorSignalRApp.Server.Hubs;
 using Microsoft.AspNetCore.SignalR;
-using TempMonitor.Server.Settings;
-using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using TempMonitor.Server.Services;
 
 namespace TempMonitor.Server.Controllers
@@ -24,7 +17,6 @@ namespace TempMonitor.Server.Controllers
         private readonly IHubContext<TemperatureHub> _temperatureHubContext;
         private readonly ITemperatureService _temperatureService;
         private readonly ILogger<TemperatureController> _logger;
-        private readonly string _basePath;
 
         public TemperatureController(
             IHubContext<TemperatureHub> hubContext,
@@ -52,6 +44,7 @@ namespace TempMonitor.Server.Controllers
         }
 
         [HttpPost()]
+        [Authorize]
         public async Task<IActionResult> Save([FromBody] Temperature temperature)
         {
             await _temperatureService.SaveLatestTemperature(temperature);
