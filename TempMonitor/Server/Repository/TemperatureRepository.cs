@@ -83,6 +83,7 @@ namespace TempMonitor.Server.Repository
             await using var csv = new CsvWriter(streamWriter, GetConfig());
             // Append records to csv
             csv.WriteRecord(temperature);
+            await csv.NextRecordAsync();
         }
 
         private IEnumerable<string> GetFilePaths(int period, DateTime? date = null)

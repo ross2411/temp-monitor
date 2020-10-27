@@ -40,13 +40,6 @@ namespace TempMonitor.Server.Controllers
         [HttpGet("GetCurrentTemp")]
         public async Task<IActionResult> GetCurrentTemperatureAsync()
         {
-            //await _chatHubContext.Clients.All.SendAsync("ReceiveMessage", "TempController", "Get Current Temp was just called");
-            //var now = DateTime.Now;
-            //var filePath = GetFilePaths(1, now).First();
-            //var temps = ExtractTemperatures(filePath);
-            //if (!temps.Any())
-            //    return this.BadRequest(new { ErrorMessage = "No Temperature files exist for the date selected"});
-            //return this.Ok(temps.Last());
             var currentTemperature = await _temperatureService.GetCurrentTemperature();
             return this.Ok(currentTemperature);
         }
@@ -56,6 +49,13 @@ namespace TempMonitor.Server.Controllers
         {
             var temperatures =  await _temperatureService.GetTemperatures(date, period);
             return this.Ok(temperatures);
+        }
+
+        [HttpPost()]
+        public async Task<IActionResult> Save([FromBody] Temperature temperature)
+        {
+            await _temperatureService.SaveLatestTemperature(temperature);
+            return this.Ok();
         }
 
        
