@@ -12,17 +12,21 @@ using Microsoft.Extensions.Options;
 using TempMonitor.Server.CsvMapper;
 using TempMonitor.Server.Settings;
 using TempMonitor.Shared;
+using System.IO.Abstractions;
 
 namespace TempMonitor.Server.Repository
 {
     public class TemperatureRepository: ITemperatureRepository
     {
+        private readonly IFileSystem _fileSystem;
         private readonly ILogger<TemperatureRepository> _logger;
         private readonly string _basePath;
         public TemperatureRepository(
             IOptions<TemperatureSettings> temperatureSettings,
+            IFileSystem fileSystem,
             ILogger<TemperatureRepository> logger)
         {
+            _fileSystem = fileSystem;
             _logger = logger;
             _basePath = temperatureSettings.Value.BasePath;
         }
@@ -70,7 +74,9 @@ namespace TempMonitor.Server.Repository
         public async Task SaveTemperature(Temperature temperature)
         {
             var filePath = GetFilePath(temperature.dateTime);
-            await using FileStream fileStream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+            if (!_fileSystem.File.Exists(filePath))
+                _fileSystem.File.Create(filePath);
+            await using Stream fileStream = _fileSystem.FileStream.Create(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
             await using StreamWriter streamWriter = new StreamWriter(fileStream);
             await using var csv = new CsvWriter(streamWriter, GetConfig());
             // Append records to csv
@@ -97,7 +103,7 @@ namespace TempMonitor.Server.Repository
 
         private IAsyncEnumerable<Temperature> ExtractTemperatures(string file, out CsvReader reader)
         {
-            if (!File.Exists(file))
+            if (!_fileSystem.File.Exists(file))
             {
                 _logger.LogError("Unable to find file {0}", file);
             }

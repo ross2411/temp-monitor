@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -13,7 +15,7 @@ namespace TempMonitor.Server.Tests
 {
     public class Tests
     {
-        private string  basePath = "/Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data";
+        private string  basePath = "/test";
 
         [SetUp]
         public void Setup()
@@ -28,7 +30,15 @@ namespace TempMonitor.Server.Tests
             {
                 BasePath = basePath
             });
-            var repository = new TemperatureRepository(options, NullLogger<TemperatureRepository>.Instance);
+            var expectedFilePath =  basePath + "/01-01-20_temps.csv";
+            var mockFileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                // { @"expectedFilePath", new MockFileData("Testing is meh.") },
+                // { @"c:\demo\jQuery.js", new MockFileData("some js") },
+                // { @"c:\demo\image.gif", new MockFileData(new byte[] { 0x12, 0x34, 0x56, 0xd2 }) }
+            });
+            mockFileSystem.Directory.CreateDirectory(basePath);
+            var repository = new TemperatureRepository(options, mockFileSystem, NullLogger<TemperatureRepository>.Instance);
             var temperatureToSave = new Temperature
             {
                 dateTime = new DateTime(2020, 01, 01, 0, 0, 0),
@@ -37,22 +47,17 @@ namespace TempMonitor.Server.Tests
                 OutsideTemp = 14.3,
                 WeatherDescription = "Sunny but cold"
             };
-            var expectedFilePath =  basePath + "/01-01-20_temps.csv";
-            if (File.Exists(expectedFilePath))
-                File.Delete(expectedFilePath);
             
             //Act
             await repository.SaveTemperature(temperatureToSave);
             
             //Assert
-            Assert.IsTrue(File.Exists(expectedFilePath));
-            var temperatureFile = File.ReadLines(expectedFilePath);
+            Assert.IsTrue(mockFileSystem.FileExists(expectedFilePath));
+            var temperatureFile = mockFileSystem.File.ReadLines(expectedFilePath);
             var temperatureLine = temperatureFile.First();
             var expectedLine = $"{temperatureToSave.dateTime:dd/MM/yy HH:mm:ss},{temperatureToSave.InsideTemp},{temperatureToSave.Humidity},{temperatureToSave.OutsideTemp},{temperatureToSave.WeatherDescription}";
             Assert.AreEqual(expectedLine, temperatureLine);
             
-            //Teardown
-            File.Delete(expectedFilePath);
         }
         
         [Test]
@@ -63,7 +68,15 @@ namespace TempMonitor.Server.Tests
             {
                 BasePath = basePath
             });
-            var repository = new TemperatureRepository(options, NullLogger<TemperatureRepository>.Instance);
+            var expectedFilePath =  basePath + "/02-01-20_temps.csv";
+            var expectedLine1 = "02/01/20 00:05:00,15.8,51.2,7.05,few clouds";
+            var mockFileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { expectedFilePath, new MockFileData(expectedLine1+"\n") },
+                // { @"c:\demo\jQuery.js", new MockFileData("some js") },
+                // { @"c:\demo\image.gif", new MockFileData(new byte[] { 0x12, 0x34, 0x56, 0xd2 }) }
+            });
+            var repository = new TemperatureRepository(options, mockFileSystem, NullLogger<TemperatureRepository>.Instance);
             var temperatureToSave = new Temperature
             {
                 dateTime = new DateTime(2020, 01, 02, 0, 10, 0),
@@ -72,36 +85,18 @@ namespace TempMonitor.Server.Tests
                 OutsideTemp = 14.3,
                 WeatherDescription = "Sunny but cold"
             };
-            var expectedFilePath =  basePath + "/02-01-20_temps.csv";
-            var expectedLine1 = "02/01/20 00:05:00,15.8,51.2,7.05,few clouds";
-            if (File.Exists(expectedFilePath))
-            {
-                File.Delete(expectedFilePath);
-            }
-            await File.WriteAllLinesAsync(expectedFilePath, new[]{expectedLine1} );
 
             //Act
             await repository.SaveTemperature(temperatureToSave);
             
             //Assert
-            Assert.IsTrue(File.Exists(expectedFilePath));
-            var temperatureFile = File.ReadLines(expectedFilePath);
+            Assert.IsTrue(mockFileSystem.FileExists(expectedFilePath));
+            var temperatureFile = mockFileSystem.File.ReadLines(expectedFilePath);
             var temperatureLine1 = temperatureFile.Skip(0).Take(1).Single();
             Assert.AreEqual(expectedLine1, temperatureLine1);
             var temperatureLine2 = temperatureFile.Skip(1).Take(1).Single();
             var expectedLine2 = $"{temperatureToSave.dateTime:dd/MM/yy HH:mm:ss},{temperatureToSave.InsideTemp},{temperatureToSave.Humidity},{temperatureToSave.OutsideTemp},{temperatureToSave.WeatherDescription}";
             Assert.AreEqual(expectedLine2, temperatureLine2);
-            
-            //Teardown
-            File.Delete(expectedFilePath);
-        }
-
-        [TearDown]
-        public void Teardown()
-        {
-            File.Delete(basePath + "/02-01-20_temps.csv");
-            File.Delete(basePath + "/01-01-20_temps.csv");
-
         }
     }
 }
