@@ -4,7 +4,7 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
 
-namespace TempMonitor.Shared
+namespace TempMonitor.Server.CsvMapper
 {
     public class CustomDateTimeConverter : TypeConverter
     {
@@ -22,5 +22,9 @@ namespace TempMonitor.Shared
             throw new Exception($"Unable to parse date: {text}");
         }
 
+        public override string ConvertToString(object value, IWriterRow row, MemberMapData memberMapData)
+        {
+            return value is DateTime time ? time.ToString("dd/MM/yy HH:mm:ss") : base.ConvertToString(value, row, memberMapData);
+        }
     }
 }

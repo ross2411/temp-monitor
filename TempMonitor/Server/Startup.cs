@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.IO.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Hosting;
@@ -36,14 +38,27 @@ namespace TempMonitor.Server
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
+            services.AddSwaggerGen();
 
+            ConfigureIoC(services);
+            
+        }
+
+        private void ConfigureIoC(IServiceCollection services)
+        {
             services.AddTransient<ITemperatureRepository, TemperatureRepository>();
             services.AddTransient<ITemperatureService, TemperatureService>();
+            services.AddTransient<IFileSystem, FileSystem>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Garden Office Temperatures V1 API");
+            });
             app.UseResponseCompression();
             if (env.IsDevelopment())
             {

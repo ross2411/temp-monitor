@@ -7,14 +7,6 @@ using TempMonitor.Shared;
 
 namespace TempMonitor.Server.Services
 {
-    public interface ITemperatureService
-    {
-        Task<Temperature> GetCurrentTemperature();
-        Task<IList<Temperature>> GetTemperatures(DateTime? date, int? periods);
-        Task SaveLatestTemperature(Temperature temperature);
-
-    }
-
     public class TemperatureService : ITemperatureService
     {
         private readonly ITemperatureRepository _temperatureRepository;
