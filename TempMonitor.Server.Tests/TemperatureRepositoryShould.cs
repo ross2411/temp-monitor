@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
@@ -98,5 +99,32 @@ namespace TempMonitor.Server.Tests
             var expectedLine2 = $"{temperatureToSave.dateTime:dd/MM/yy HH:mm:ss},{temperatureToSave.InsideTemp},{temperatureToSave.Humidity},{temperatureToSave.OutsideTemp},{temperatureToSave.WeatherDescription}";
             Assert.AreEqual(expectedLine2, temperatureLine2);
         }
+
+        // [Test]
+        // public async Task ReturnLatestTemperatureFromMostRecentlyUpdatedFile()
+        // {
+        //     //Arrange
+        //     var expectedFilePath0101 =  basePath + "/01-01-20_temps.csv";
+        //     var expectedFilePath0201 =  basePath + "/02-01-20_temps.csv";
+        //
+        //     var mockFileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        //     {
+        //         { expectedFilePath0101, new MockFileData(expectedLine1+"\n") },
+        //         { expectedFilePath0201, new MockFileData(expectedLine1+"\n") },
+        //     });
+        //     var options = new OptionsWrapper<TemperatureSettings>(new TemperatureSettings
+        //     {
+        //         BasePath = basePath
+        //     });
+        //     ITemperatureRepository repo = new TemperatureRepository(options, mockFileSystem, NullLogger<TemperatureRepository>.Instance );
+        //     
+        //     
+        //     //Act
+        //     var latestTemperature =  await repo.GetLatestTemperature();
+        //
+        //     //Assert
+        //     
+        //
+        // }
     }
 }

@@ -34,7 +34,9 @@ namespace TempMonitor.Server.Repository
         public async Task<Temperature> GetLatestTemperature()
         {
             var now = DateTime.Now;
-            var filePath = GetFilePaths(1, now).Single();
+            var files = _fileSystem.DirectoryInfo.FromDirectoryName(_basePath).GetFiles().OrderByDescending(m => m.LastWriteTime);
+
+            var filePath = files.First().FullName;
             var temps = ExtractTemperatures(filePath, out var reader);
             using (reader)
             {
