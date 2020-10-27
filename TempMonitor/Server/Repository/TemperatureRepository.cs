@@ -84,6 +84,8 @@ namespace TempMonitor.Server.Repository
             // Append records to csv
             csv.WriteRecord(temperature);
             await csv.NextRecordAsync();
+            _logger.LogInformation("Added new temperature. Internal Temp: {0}, External Temp: {1}", temperature.InsideTemp, temperature.OutsideTemp);
+
         }
 
         private IEnumerable<string> GetFilePaths(int period, DateTime? date = null)

@@ -83,6 +83,7 @@ namespace TempMonitor.Server
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapHub<ChatHub>("/chathub");
+                endpoints.MapHub<TemperatureHub>("/temperaturehub");
                 endpoints.MapFallbackToFile("index.html");
             });
         }

@@ -21,18 +21,18 @@ namespace TempMonitor.Server.Controllers
     [Route("[controller]")]
     public class TemperatureController : ControllerBase
     {
-        private readonly IHubContext<ChatHub> _chatHubContext;
+        private readonly IHubContext<TemperatureHub> _temperatureHubContext;
         private readonly ITemperatureService _temperatureService;
         private readonly ILogger<TemperatureController> _logger;
         private readonly string _basePath;
 
         public TemperatureController(
-            IHubContext<ChatHub> hubContext,
+            IHubContext<TemperatureHub> hubContext,
             ITemperatureService temperatureService,
             
             ILogger<TemperatureController> logger)
         {
-            this._chatHubContext = hubContext;
+            this._temperatureHubContext = hubContext;
             this._temperatureService = temperatureService;
             this._logger = logger;
         }
@@ -55,6 +55,7 @@ namespace TempMonitor.Server.Controllers
         public async Task<IActionResult> Save([FromBody] Temperature temperature)
         {
             await _temperatureService.SaveLatestTemperature(temperature);
+            await _temperatureHubContext.Clients.All.SendAsync("LatestTempReceived", temperature);
             return this.Ok();
         }
 

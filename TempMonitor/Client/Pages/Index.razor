@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using TempMonitor.Shared
+@using Microsoft.AspNetCore.SignalR.Client
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
@@ -20,7 +21,7 @@ else
     <div class="row">
 
         <div class="col-md">
-
+<label>Inside</label>
             <RadzenRadialGauge Style="width: 100%; height: 300px;">
                 <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Step="5" Min="0" Max="35" TickPosition=@tickPosition>
                     <RadzenRadialGaugeScalePointer Value=@currentTemperature.InsideTemp Length="0.6" ShowValue=@showValue>
@@ -38,19 +39,20 @@ else
             </RadzenRadialGauge>
         </div>
         <div class="col-md">
+            <label>Outside</label>
             <RadzenRadialGauge Style="width: 100%; height: 300px;">
                 <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Step="5" Min="0" Max="35" TickPosition=@tickPosition>
-                    <RadzenRadialGaugeScalePointer Value=@(currentTemperature.OutsideTemp??0) Length="0.6" ShowValue=@showValue>
+                    <RadzenRadialGaugeScalePointer Value=@(currentTemperature.OutsideTemp ?? 0) Length="0.6" ShowValue=@showValue>
                         <Template Context="pointer">
                             <h4>
                                 @pointer.Value <sup>C</sup>
                             </h4>
                         </Template>
                     </RadzenRadialGaugeScalePointer>
-                    <RadzenRadialGaugeScaleRange From="15" To="25" Fill="green" />
-                    <RadzenRadialGaugeScaleRange From="7.5" To="15" Fill="orange" />
-                    <RadzenRadialGaugeScaleRange From="0" To="7.5" Fill="blue" />
-                    <RadzenRadialGaugeScaleRange From="25" To="35" Fill="red" />
+                    <RadzenRadialGaugeScaleRange From="15" To="25" Fill="green"/>
+                    <RadzenRadialGaugeScaleRange From="7.5" To="15" Fill="orange"/>
+                    <RadzenRadialGaugeScaleRange From="0" To="7.5" Fill="blue"/>
+                    <RadzenRadialGaugeScaleRange From="25" To="35" Fill="red"/>
                 </RadzenRadialGaugeScale>
             </RadzenRadialGauge>
         </div>
@@ -84,9 +86,11 @@ else
 
 
 @code {
+    private HubConnection hubConnection;
+
     bool showValue = true;
     GaugeTickPosition tickPosition = GaugeTickPosition.Inside;
-    private Temperature[] temperatures;
+    private List<Temperature> temperatures;
     private string currentPeriod;
     private List<Period> periods = new List<Period>
 {
@@ -123,6 +127,19 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/temperaturehub"))
+            .Build();
+        
+        hubConnection.On<Temperature>
+            ("LatestTempReceived", (temperature) =>
+            {
+                currentTemperature = temperature;
+                // if (temperature.dateTime.Date == temperatures.Last().dateTime.Date) //TODO This should check for midnight cross over
+                temperatures.Add(temperature);
+                StateHasChanged();
+            });
+        
         //TODO Swap out for SignalR
         var periodDays = 3;
         currentPeriod = periodDays.ToString(); // periods.First(m => m.Value == $"{periodDays}");
@@ -133,7 +150,7 @@ else
             // set error message for display, log to console and return
             errorMessage = temperatureHttpResponse.ReasonPhrase;
             Console.WriteLine($"There was an error retrieving Temps! {errorMessage}");
-            temperatures = new Temperature[] { new Temperature {
+            temperatures = new List<Temperature> { new Temperature {
             dateTime = new DateTime(2020,01,01),
             Humidity =1,
             InsideTemp = 1,
@@ -144,7 +161,7 @@ else
         }
         else
         {
-            temperatures = (await temperatureHttpResponse.Content.ReadFromJsonAsync<Temperature[]>());
+            temperatures = (await temperatureHttpResponse.Content.ReadFromJsonAsync<List<Temperature>>());
         }
 
         using var currentTemperatureHttpResponse = await Http.GetAsync("temperature/GetCurrentTemp");
@@ -167,6 +184,8 @@ else
             currentTemperature = (await currentTemperatureHttpResponse.Content.ReadFromJsonAsync<Temperature>());
         }
         //currentTemperature = (await Http.GetFromJsonAsync<Temperature>($"temperature/GetCurrentTemp"));
+        await hubConnection.StartAsync();
+
     }
 
     string FormatAsDegreesC(object value)
@@ -178,7 +197,7 @@ else
         if (value == null)
             value = 1;
         currentPeriod = value.ToString();
-        temperatures = await Http.GetFromJsonAsync<Temperature[]>($"temperature/GetTemps?period={value.ToString()}");
+        temperatures = await Http.GetFromJsonAsync<List<Temperature>>($"temperature/GetTemps?period={value.ToString()}");
         StateHasChanged();
     }
 
