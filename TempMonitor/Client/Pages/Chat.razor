@@ -52,7 +52,13 @@
                 messages.Add(encodedMsg);
                 StateHasChanged();
             });
-
+        hubConnection.On<Temperature>
+            ("LatestTempReceived", (temperature) =>
+            {
+                var encodedMsg = $"backend: {temperature.InsideTemp}C";
+                messages.Add(encodedMsg);
+                StateHasChanged();
+            });
         await hubConnection.StartAsync();
     }
 
