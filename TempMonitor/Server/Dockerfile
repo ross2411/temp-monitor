@@ -5,8 +5,8 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-ARG GIT_DESCRIBE=unspecified
-LABEL git_describe=$GIT_DESCRIBE
+#ARG GIT_DESCRIBE=unspecified
+#LABEL git_describe=$GIT_DESCRIBE
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
@@ -17,8 +17,11 @@ RUN dotnet restore "TempMonitor/Server/TempMonitor.Server.csproj"
 COPY . .
 WORKDIR "/src/TempMonitor/Server"
 
+
 FROM build AS publish
-RUN dotnet publish "TempMonitor.Server.csproj" -c Release -o /app/publish /p:Version="1.2.3"
+ARG GIT_DESCRIBE
+RUN echo "GIT_DESCRIBE: "${GIT_DESCRIBE}
+RUN dotnet publish "TempMonitor.Server.csproj" -c Release -o /app/publish /p:ApplicationVersion=$GIT_DESCRIBE
 
 FROM base AS final
 WORKDIR /app

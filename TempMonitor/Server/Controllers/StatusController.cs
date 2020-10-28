@@ -10,19 +10,17 @@ namespace TempMonitor.Server.Controllers
         [HttpGet("VersionInfo")]
         public IActionResult Version()
         {
-            var version = Assembly.GetExecutingAssembly().GetName().Version;
-            if (version is { })
-                return this.Ok(new VersionInfo
-                {
-                    AssemblyVersion = version.ToString()
-                });
-            else
+            // var version = Assembly.GetExecutingAssembly()
+            //         .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)[0]
+            //     .InformationalVersion;
+            var version = ((AssemblyInformationalVersionAttribute)Assembly
+                    .GetExecutingAssembly()
+                    .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)[0])
+                .InformationalVersion;
+            return Ok(new VersionInfo
             {
-                return this.BadRequest(new
-                {
-                    ErrorMessage = "Unable to query Assembly version"
-                });
-            }
+                AssemblyVersion = version
+            });
         }
     }
 }
