@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using TempMonitor.Shared
 @using Microsoft.AspNetCore.SignalR.Client
+@using System.Reflection
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
@@ -15,6 +16,10 @@
 }
 else
 {
+    <div class="row">
+    Client AssemblyVersion:@ClientAssemblyVersion
+    Server AssemblyVersion:@ServerAssemblyVersion
+    </div>
 <div class="row">
     <label>Latest reading at: @currentTemperature.dateTime.ToString("dd/MM/yy HH:mm:ss")</label>
 </div>
@@ -87,7 +92,8 @@ else
 
 @code {
     private HubConnection hubConnection;
-
+    private string ClientAssemblyVersion;
+    private string ServerAssemblyVersion;
     bool showValue = true;
     GaugeTickPosition tickPosition = GaugeTickPosition.Inside;
     private List<Temperature> temperatures;
@@ -127,6 +133,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        ClientAssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/temperaturehub"))
             .Build();
@@ -182,6 +189,14 @@ else
         else
         {
             currentTemperature = (await currentTemperatureHttpResponse.Content.ReadFromJsonAsync<Temperature>());
+        }
+
+        var versionInfoResponse = await Http.GetAsync("VersionInfo");
+        if (versionInfoResponse.IsSuccessStatusCode)
+        {
+            var versionInfo = await versionInfoResponse.Content.ReadFromJsonAsync<VersionInfo>();
+            ServerAssemblyVersion = versionInfo.AssemblyVersion;
+
         }
         //currentTemperature = (await Http.GetFromJsonAsync<Temperature>($"temperature/GetCurrentTemp"));
         await hubConnection.StartAsync();

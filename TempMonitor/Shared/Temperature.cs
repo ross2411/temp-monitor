@@ -2,6 +2,10 @@
 
 namespace TempMonitor.Shared
 {
+    public class VersionInfo
+    {
+        public string AssemblyVersion { get; set; }
+    }
     public class Temperature
     {
         public DateTime Date => dateTime;

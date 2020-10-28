@@ -111,6 +111,8 @@ namespace TempMonitor.Server.Repository
             if (!_fileSystem.File.Exists(file))
             {
                 _logger.LogError("Unable to find file {0}", file);
+                reader = null;
+                return null;
             }
 
             reader = new CsvReader(new StreamReader(file), GetConfig());
