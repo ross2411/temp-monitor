@@ -11,3 +11,5 @@ services:
     volumes:
       - ~/.aspnet/https:/root/.aspnet/https:ro
       - ~/.microsoft/usersecrets:/root/.microsoft/usersecrets:ro
+      - /Users/rossellerington/Projects/TempMonitor/TempMonitor/Server/Data:/var/temps:rw
+    
