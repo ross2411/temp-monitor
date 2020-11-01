@@ -41,10 +41,6 @@ namespace TempMonitor.Server
             services.AddSwaggerGen();
             services.AddAuthentication("BasicAuthentication")
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
-            // services.AddAuthorization(options =>
-            // {
-            //
-            // });
             ConfigureIoC(services);
             
         }
