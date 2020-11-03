@@ -61,9 +61,10 @@ namespace TempMonitor.Server.Repository
                 _logger.LogInformation("Extracting data from {0}", file);
 
                 var temps = ExtractTemperatures(file, out reader);
+                if (temps == null) continue;
                 var granulatedTemps = await Granularity(temps, periods ?? 1);
                 temperatures.AddRange(granulatedTemps);
-               
+
             }
             using (reader)
             {
@@ -114,11 +115,12 @@ namespace TempMonitor.Server.Repository
                 reader = null;
                 return null;
             }
-
-            reader = new CsvReader(new StreamReader(file), GetConfig());
-            var temps =  reader.GetRecordsAsync<Temperature>();
-            return temps;
-
+            else
+            {
+                reader = new CsvReader(new StreamReader(file), GetConfig());
+                var temps =  reader.GetRecordsAsync<Temperature>();
+                return temps;
+            }
         }
         
         private async Task<IEnumerable<Temperature>> Granularity(IAsyncEnumerable<Temperature> temps, int period)
