@@ -13,10 +13,13 @@ namespace TempMonitor.Server.Controllers
             // var version = Assembly.GetExecutingAssembly()
             //         .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)[0]
             //     .InformationalVersion;
-            var version = ((AssemblyInformationalVersionAttribute)Assembly
-                    .GetExecutingAssembly()
-                    .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)[0])
-                .InformationalVersion;
+            // var version = ((AssemblyInformationalVersionAttribute)Assembly
+            //         .GetExecutingAssembly()
+            //         .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)[0])
+            //     .InformationalVersion;
+            var version = Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion;
             return Ok(new VersionInfo
             {
                 AssemblyVersion = version

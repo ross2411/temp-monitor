@@ -133,7 +133,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        ClientAssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        ClientAssemblyVersion = Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion;
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/temperaturehub"))
             .Build();
