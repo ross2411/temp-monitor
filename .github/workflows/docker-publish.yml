@@ -49,16 +49,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
+      - name: Git Fetch
+        run: git fetch --prune --unshallow --tags
       - name: Build image 
         run: |
-           git fetch --prune --unshallow --tags
            GIT_DESCRIBE=$(git describe --tags)
            docker build . --file TempMonitor/Server/Dockerfile --tag $IMAGE_NAME --build-arg GIT_DESCRIBE=$GIT_DESCRIBE 
         
       - name: Build ARM32 image 
         run: |
-          git fetch --prune --unshallow --tags
           GIT_DESCRIBE=$(git describe --tags)
           docker build . --file TempMonitor/Server/Dockerfile.arm32 --tag $IMAGE_NAME_ARM32 --build-arg GIT_DESCRIBE=$GIT_DESCRIBE 
 
