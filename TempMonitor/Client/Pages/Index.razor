@@ -138,6 +138,7 @@ else
             ?.InformationalVersion;
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/temperaturehub"))
+            .WithAutomaticReconnect()
             .Build();
         
         hubConnection.On<Temperature>
