@@ -52,6 +52,7 @@ jobs:
 
       - name: Build image 
         run: |
+           git fetch --tags
            GIT_DESCRIBE=$(git describe --tags)
            docker build . --file TempMonitor/Server/Dockerfile --tag $IMAGE_NAME --build-arg GIT_DESCRIBE=$GIT_DESCRIBE 
         
