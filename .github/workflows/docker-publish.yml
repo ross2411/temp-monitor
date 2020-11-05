@@ -74,7 +74,7 @@ jobs:
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
 
           # Use Docker `latest` tag convention
-          [ "$VERSION" == "master" ] && VERSION=latest
+          #[ "$VERSION" == "master" ] && VERSION=latest
   
           echo VERSION=$VERSION
           IMAGE_ID=tredsoft/$IMAGE_NAME
@@ -82,7 +82,8 @@ jobs:
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           echo IMAGE_ID=$IMAGE_ID
-
+          [ "$VERSION" == "master" ] && docker tag $IMAGE_NAME $IMAGE_ID:latest
+          [ "$VERSION" == "master" ] && docker push $IMAGE_ID:latest
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
           
@@ -95,7 +96,7 @@ jobs:
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
 
           # Use Docker `latest` tag convention
-          [ "$VERSION" == "master" ] && VERSION=latest
+          #[ "$VERSION" == "master" ] && VERSION=latest
   
           echo VERSION=$VERSION
           IMAGE_ID_ARM32=tredsoft/$IMAGE_NAME_ARM32
@@ -106,5 +107,7 @@ jobs:
           echo IMAGE_ID_ARM32=$IMAGE_ID_ARM32
           echo VERSION=$VERSION
 
+          [ "$VERSION" == "master" ] && docker tag $IMAGE_NAME $IMAGE_ID:latest
+          [ "$VERSION" == "master" ] && docker push $IMAGE_ID:latest
           docker tag $IMAGE_NAME_ARM32 $IMAGE_ID_ARM32:$VERSION
           docker push $IMAGE_ID_ARM32:$VERSION
