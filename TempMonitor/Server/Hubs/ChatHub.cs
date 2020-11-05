@@ -19,9 +19,4 @@ namespace BlazorSignalRApp.Server.Hubs
             await Clients.All.SendAsync("SendLatestTemp", temperature);
         }
     }
-
-    public class TemperatureHub : Hub
-    {
-        
-    }
 }
