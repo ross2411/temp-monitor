@@ -14,7 +14,9 @@ COPY . .
 WORKDIR "/src/TempMonitor/Server"
 
 FROM build AS publish
-RUN dotnet publish "TempMonitor.Server.csproj" -c Release -o /app/publish
+ARG GIT_DESCRIBE=notset
+RUN echo "GIT_DESCRIBE: ${GIT_DESCRIBE}"
+RUN dotnet publish "TempMonitor.Server.csproj" -c Release -p:InformationalVersion=$GIT_DESCRIBE -o /app/publish 
 
 FROM base AS final
 WORKDIR /app
