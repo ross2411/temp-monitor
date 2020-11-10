@@ -10,7 +10,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.0-rc.2.*" PrivateAssets="all" />
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0.*" />
     <PackageReference Include="Radzen.Blazor" Version="2.15.17" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0-rc.2.*" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0.*" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.0-rc.2.*" />
   </ItemGroup>
 
