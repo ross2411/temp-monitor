@@ -26,11 +26,11 @@ else
     <div class="row">
 
         <div class="col-md">
-<label>Inside</label>
             <RadzenRadialGauge Style="width: 100%; height: 300px;">
                 <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Step="5" Min="0" Max="35" TickPosition=@tickPosition>
                     <RadzenRadialGaugeScalePointer Value=@currentTemperature.InsideTemp Length="0.6" ShowValue=@showValue>
                         <Template Context="pointer">
+                            <label>Inside</label>
                             <h4>
                                 @pointer.Value <sup>C</sup>
                             </h4>
@@ -44,11 +44,11 @@ else
             </RadzenRadialGauge>
         </div>
         <div class="col-md">
-            <label>Outside</label>
             <RadzenRadialGauge Style="width: 100%; height: 300px;">
                 <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Step="5" Min="0" Max="35" TickPosition=@tickPosition>
                     <RadzenRadialGaugeScalePointer Value=@(currentTemperature.OutsideTemp ?? 0) Length="0.6" ShowValue=@showValue>
                         <Template Context="pointer">
+                            <label>Outside</label>
                             <h4>
                                 @pointer.Value <sup>C</sup>
                             </h4>
