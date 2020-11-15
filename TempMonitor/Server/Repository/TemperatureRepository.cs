@@ -33,7 +33,6 @@ namespace TempMonitor.Server.Repository
 
         public async Task<Temperature> GetLatestTemperature()
         {
-            var now = DateTime.Now;
             var files = _fileSystem.DirectoryInfo.FromDirectoryName(_basePath).GetFiles().OrderByDescending(m => m.LastWriteTime);
 
             var filePath = files.First().FullName;
@@ -92,8 +91,10 @@ namespace TempMonitor.Server.Repository
         private IEnumerable<string> GetFilePaths(int period, DateTime? date = null)
         {
             if (date == null)
-                date = DateTime.Now;
-
+            {
+                var files = _fileSystem.DirectoryInfo.FromDirectoryName(_basePath).GetFiles().OrderByDescending(m => m.LastWriteTime);
+                return files.Select(m => m.FullName).Take(period);
+            }
             var fp = new List<string>();
             for (int i = period - 1; i >= 0; i--)
             {
