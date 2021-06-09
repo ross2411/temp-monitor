@@ -6,7 +6,7 @@
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'TempMonitor' " />
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.0.*" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.7.*" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.0.*" PrivateAssets="all" />
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0.*" />
     <PackageReference Include="Radzen.Blazor" Version="2.15.17" />
