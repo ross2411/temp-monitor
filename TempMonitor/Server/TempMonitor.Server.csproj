@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.0.*" />
     <PackageReference Include="Radzen.Blazor" Version="2.15.17" />
-    <PackageReference Include="CsvHelper" Version="16.0.0" />
+    <PackageReference Include="CsvHelper" Version="30.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0.*" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     <PackageReference Include="System.IO.Abstractions" Version="12.2.24" />
